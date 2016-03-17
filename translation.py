@@ -1,3 +1,8 @@
+## Code by Toby Cheese
+# https://www.kaggle.com/nickthegreek/coupon-purchase-prediction/translate-all-fields-using-google-trans
+
+############################
+
 __author__ = 'ntg'
 
 """
