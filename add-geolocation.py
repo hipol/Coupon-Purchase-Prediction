@@ -2,26 +2,6 @@
 #follow instructions here https://pypi.python.org/pypi/geolocation-python/0.2.0
 #make sure you use your own API key, and enable the GEOCODING API
 
-########## DO NOT USE THISSSSS
-#
-
-#
-#
-#
-#
-#
-#
-#
-
-#
-#
-#
-#
-#
-#
-##
-
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.random import normal
@@ -49,61 +29,11 @@ coupon_list_test = coupon_list_test[['CAPSULE_TEXT', 'GENRE_NAME',
  'small_area_name', 'COUPON_ID_hash', 'PREF_LATITUDE', 'PREF_LONGITUDE']]
 
 from geolocation.google_maps import GoogleMaps
-google_maps = GoogleMaps(api_key='AIzaSyDfcNVikQhUnDrVxeUz1Yq39sNa65--gOQ')
+google_maps = GoogleMaps(api_key='')
 
 
 #if Google maps can't find a small area location, go to prefecture data provided in CSV file
 def getGeopoint( address ):
-  if address == "Aichi":
-    return (0,0)
-  if address == "Much":
-    return (0,0)
-  if address == "Kochi":
-    return (0,0)
-  if address == "Triple":
-    return (0,0)
-  if address == "Shinjuku, Takadanobaba Nakano - Kichijoji":
-    return (0,0)
-  if address == "Kawasaki, Shonan-Hakone other":
-    return (0,0)
-  if address == "Hokkaido":
-    return (0,0)
-  if address == "Minami other":
-    return (0,0)
-  if address == "Ikebukuro Kagurazaka-Akabane":
-    return (0,0)
-  if address == "Akasaka, Roppongi, Azabu":
-    return (0,0)
-  if address == "Yokohama":
-    return (0,0)
-  if address == "Miyagi":
-    return (0,0)
-  if address == "Ehime":
-    return (0,0)
-  if address == "Kagawa":
-    return (0,0)
-  if address == "Northern":
-    return (0,0)
-  if address == "Hyogo":
-    return (0,0)
-  if address == "Ishikawa":
-    return (0,0)
-  if address == "Okinawa":
-    return (0,0)
-  if address == "Iwate":
-    return (0,0)
-  if address == "Gunma":
-    return (0,0)
-  if address == "Shiga":
-    return (0,0)
-  if address == "Shimane":
-    return (0,0)
-  if address == "Ibaraki":
-    return (0,0)
-  if address == "Saga":
-    return (0,0)
-  if address == "":
-    return (0,0)
 
   location = google_maps.search(location=address) # sends search to Google Maps.
   my_location = location.first() # returns only first location.
