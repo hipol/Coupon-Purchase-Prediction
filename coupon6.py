@@ -12,20 +12,7 @@ coupon_list_test = pd.read_csv('coupon_list_test_translated2.csv')
 user_list = pd.read_csv('user_list_translated.csv')
 coupon_purchases_train = pd.read_csv("coupon_detail_train_translated.csv")
 
-### MAKE SURE YOU ADD THE WEIGHT VALUE TO THE WEIGHT TABLE
-############# VISIT
-#coupon_visit_train = pd.read_csv("coupon_visit_train.csv")
-#coupon_visit_train = coupon_visit_train[['I_DATE', 'VIEW_COUPON_ID_hash', 'USER_ID_hash', 'I_Month']]
-#coupon_purchases_train = coupon_purchases_train[['ITEM_COUNT', 'I_DATE', 'USER_ID_hash', 'COUPON_ID_hash', 'I_Month']]
-
-#coupon_visit_train["COUPON_ID_hash"] = coupon_visit_train["VIEW_COUPON_ID_hash"]
-#coupon_visit_train = coupon_visit_train.drop("VIEW_COUPON_ID_hash", axis=1)
-#coupon_visit_train["ITEM_COUNT"] = 1
-
 coupon_purchases_train["Weight"] = 1.0
-#coupon_visit_train["Weight"] = 0.0000001
-
-    ### ADD THIS SHIT
 coupon_purchases_train.loc[coupon_purchases_train["I_Month"] == 1, "Weight"] = coupon_purchases_train["Weight"]*0.5
 coupon_purchases_train.loc[coupon_purchases_train["I_Month"] == 2, "Weight"] = coupon_purchases_train["Weight"]*0.5
 coupon_purchases_train.loc[coupon_purchases_train["I_Month"] == 3, "Weight"] = coupon_purchases_train["Weight"]*0.5
@@ -40,17 +27,7 @@ coupon_purchases_train.loc[coupon_purchases_train["I_Month"] == 11, "Weight"] = 
 coupon_purchases_train.loc[coupon_purchases_train["I_Month"] == 12, "Weight"] = coupon_purchases_train["Weight"]*0.25
 
 
-#coupon_purchases_train = pd.concat([coupon_visit_train, coupon_purchases_train], axis=0)
 ############## VISIT
-
-#note that this only makes use of purchases data, not view data
-#maybe to improve, use view data AND purchase data  --> wait, slash view data already has a purchase flag
-
-### merge to obtain (USER_ID) <-> (COUPON_ID with features) training set
-
-## http://stackoverflow.com/questions/38549/difference-between-inner-and-outer-joins
-## note that this is an inner join, so COUPON_ID_hash must be included in both the files in order to show up
-## otherwise the data is dropped
 purchased_coupons_train = coupon_purchases_train.merge(coupon_list_train,
                                                  on='COUPON_ID_hash',
                                                  how='inner')
@@ -77,42 +54,7 @@ combined = pd.concat([purchased_coupons_train, coupon_list_test], axis=0)
 
 print(2)
 
-###### PCA
-#    from sklearn.decomposition import PCA
-
-#    X = combined
-#    print(X.shape)
-
-#    pca = PCA()
-#    pca.fit(X)
-#    PCA(copy=True, whiten=False)
-
-#    print("pca: ")
-#    print(pca.explained_variance_ratio_)
-
-#    pca.n_components = 1
-#    X_reduced = pca.fit_transform(X)
-#    print(X_reduced.shape)
-
-
-
-#    X_reduced_file = pd.DataFrame(np.int_(X_reduced[1:,1:]), index=X_reduced[1:,0], columns=X_reduced[0,1:])
-#    X_reduced_file = X_reduced_file.reset_index()
-
-#    X_reduced_file["PCA_COL"] = X_reduced_file["index"]
-#    X_reduced_file.drop('index', inplace=True, axis=1)
-
- #   combined["PCA_COL"] = X_reduced_file["PCA_COL"]
-
-######## PCA
-
-
 ### create two new features
-################## BUT why use log base 10 ?!?!]
-## because it's distributed weirdly, hugely skewed to the right
-## then, log 10 doesn't give the same variation in results
-## therefore 1 / ____ is the best approach
-# but note that taking the reciprocal actually flips the data, so that the larger numbers are actually the lower prices
 combined['DISCOUNT_PRICE'] = 1 / np.log10(combined['DISCOUNT_PRICE'])
 
 ### convert categoricals to OneHotEncoder form
@@ -142,15 +84,6 @@ test.drop('USER_ID_hash', inplace=True, axis=1)
 ### find most appropriate coupon for every user (mean of all purchased coupons), in other words, user profile
 train_dropped_coupons = train.drop('COUPON_ID_hash', axis=1)
 
-
-
-############## UNCOMMENT THE LINE BELOW AFTER YOU REMOVE THE VISIT
-        ## sorts by USER ID and then takes the mean for each user
-#        user_profiles = train_dropped_coupons.groupby(by='USER_ID_hash').apply(np.mean)
-#        print("FUCK YEAR !")
-#        print(user_profiles.shape)
-
-
 ########### VISIT
 def wavg(group):
   li = list(group.columns.values)
@@ -173,14 +106,9 @@ user_profiles = train_dropped_coupons.groupby(by='USER_ID_hash').apply(wavg)
 
 ############## VISIT
 
-### creating weight matrix for features
-#changing weight of large_area_name from 0.5 to 0 improved the score
-#changing weight of ken_name from 1 to 0 improved the score
-#changing the weight of GENRE_NAME from 2 to 3 or 1.5 did not improve, or 2.1 (stayed the same)
-
 FEATURE_WEIGHTS = {
     'GENRE_NAME': 2.7,
-    'DISCOUNT_PRICE': 4, # 9.5 - 10 - 10.5 ? larger?
+    'DISCOUNT_PRICE': 4, 
     'large_area_name': 0,
     'ken_name': 0,
     'small_area_name': 5,
@@ -206,12 +134,10 @@ print(4)
 ### find weighted dot product(modified cosine similarity) between each test coupon and user profiles
 test_only_features = test.drop('COUPON_ID_hash', axis=1)
 
-### test this shit out using a sketch ymetho first
 for x in test_only_features.columns:
   test_only_features[x] = test_only_features[x].fillna(test_only_features[x].median())
 
 ##.T means transpose
-#### but what does this mean?!?!??!!
 similarity_scores = np.dot(np.dot(user_profiles, W),
                            test_only_features.T)
 
